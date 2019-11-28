@@ -24,10 +24,12 @@ module.exports = async (msg) => {
         }
 
         //Tell the user the pool's balance.
-        msg.obj.reply(pools[pool].printName + " has " + (await process.core.users.getBalance(pool)).toString() + " " + process.settings.coin.symbol + ".");
+	const balance = await process.core.users.getBalance(pool);
+        msg.obj.reply(pools[pool].printName + " has " + balance.toString() + " " + process.settings.coin.symbol + ".");
         return;
     }
 
-    //If no argument was provided, tell the user thir balance.
-    msg.obj.reply("You have " + (await process.core.users.getBalance(msg.sender)).toString() + " " + process.settings.coin.symbol + ".");
+    //If no argument was provided, tell the user their balance.
+    const balance = await process.core.users.getBalance(msg.sender);
+    msg.obj.reply("You have " + balance.toString() + " " + process.settings.coin.symbol + ".");
 };

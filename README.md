@@ -1,4 +1,6 @@
-# Tip Bot
+# Zenon Tip Bot
+
+What follows is the original README for the BTC/ERC20 tip-bot; see also README.zenon.
 
 ### A BTC and ERC20 Tip bot made for Discord, with MySQL as a DB.
 

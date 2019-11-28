@@ -1,22 +1,23 @@
 {
     "name": "tip-bot",
     "version": "2.0.0",
-    "description": "A BTC and ERC20 TipBot for Discord.",
-    "author": "Luke Parker/kayabaNerve",
+    "description": "A Discord ZNN TipBot.",
+    "author": "Luke Parker/kayabaNerve and Zenon community",
     "license": "MIT",
     "main": "main.js",
     "repository": {
         "type": "git",
-        "url": "https://github.com/kayabaNerve/tip-bot.git"
+        "url": "https://github.com/walkingsteeve/tip-bot"
     },
     "dependencies": {
+        "@discordjs/uws": "^10.149.0",
         "await-sleep": "0.0.1",
         "bignumber.js": "^9.0.0",
-        "bitcoin-core": "^2.0.0",
+        "bufferutil": "^4.0.1",
         "discord.js": "^11.5.1",
-        "ethereumjs-wallet": "^0.6.3",
-        "promise-mysql": "^4.0.3",
-        "web3": "^1.0.0-beta.36"
+        "graceful-fs": "^4.2.2",
+        "promise-mysql": "^4.1.0",
+        "zenon": "file:../zenonjs"
     },
     "devDependencies": {
         "eslint": "^5.16.0"

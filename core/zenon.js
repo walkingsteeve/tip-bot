@@ -1,7 +1,7 @@
-//BTC lib.
-var bitcoin = require("bitcoin-core");
+//Zenon lib.
+var zenon = require("zenon");
 
-//BTC RPC Client.
+//Zenon RPC Client.
 var client;
 
 //RAM cache of all the addresses and TXs.
@@ -26,7 +26,7 @@ async function getTransactions(address) {
 //Sends amount to address.
 async function send(address, amount) {
     try {
-        return await client.sendToAddress(address, amount.toFixed(8));
+        return client.sendToAddress(address, amount.toNumber());
     } catch(e) {
         return false;
     }
@@ -34,7 +34,7 @@ async function send(address, amount) {
 
 module.exports = async () => {
     //Create the client.
-    client = new bitcoin({
+    client = new zenon({
         host: "localhost",
         port: process.settings.coin.port,
         username: process.settings.coin.user,

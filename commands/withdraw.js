@@ -32,6 +32,13 @@ module.exports = async (msg) => {
         amountWFee = amount.plus(BN(process.settings.coin.withdrawFee));
     }
 
+    const minAmount = BN(10).exponentiatedBy(-process.settings.coin.decimals);
+    if (amount.lte(BN(0))) {
+	msg.obj.reply("You must withdraw at least " + minAmount.toString() + " " +
+		      process.settings.coin.symbol + ".");
+	return;
+    }
+
     //Get the address by filtering the message again, but not calling toLowerCase this time since addresses are case sensitive.
     var address = msg.obj.content
         .split(" ").filter((item) => {
@@ -50,7 +57,8 @@ module.exports = async (msg) => {
 
     //If we were unable to subtract the proper amount...
     if (!(await process.core.users.subtractBalance(msg.sender, amountWFee))) {
-        msg.obj.reply("Your number is either invalid, negative, or you don't have enough. Remember, you must also have extra " + symbol + " to pay the fee.");
+	msg.obj.reply("Sorry, apparently you do not have enough " +
+		      process.settings.coin.symbol + "...");
         return;
     }
 
@@ -58,7 +66,10 @@ module.exports = async (msg) => {
     var hash = await process.core.coin.send(address, amount);
     if (typeof(hash) !== "string") {
         msg.obj.reply("Our node failed to create a TX! Is your address invalid?");
-        await process.core.users.addBalance(msg.sender, amount);
+
+        if (!(await process.core.users.addBalance(msg.sender, amount))) {
+	    console.error("ERROR: There's probably an inconsistency in the balance for " + from);
+	}
         return;
     }
 

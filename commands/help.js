@@ -1,12 +1,16 @@
 //Get variables from the settings.
-var bot = process.settings.discord.user;
-var symbol = process.settings.coin.symbol;
-var decimals = process.settings.coin.decimals;
-var fee = process.settings.coin.withdrawFee;
+const bot = process.settings.discord.user;
+const symbol = process.settings.coin.symbol;
+const decimals = process.settings.coin.decimals;
+const fee = process.settings.coin.withdrawFee;
+const maintainer = process.settings.meta.maintainer;
+const admin = process.settings.meta.admin;
 
 //Default help tect.
-var help = `
-**TIPBOT COMMAND LIST**
+const help = `
+**${symbol}-TIPBOT**
+
+This bot is a work in progress based on the open source code available at https://github.com/walkingsteeve/tip-bot.
 
 To run a command, either preface it with "!" ("!deposit", "!tip") or ping the bot ("<@${bot}> deposit", "<@${bot}> tip").
 
@@ -24,9 +28,8 @@ Withdraws AMOUNT to ADDRESS, charging a ${fee} ${symbol} fee.
 -- *!deposit*
 Prints your personal deposit address.
 
-If you have any questions, feel free to ask <@272093437166223360>.
+If you have any questions, feel free to ask @${admin} or @${maintainer}.
 
-This bot is fully open source and available at https://github.com/kayabaNerve/tip-bot.
 `;
 
 module.exports = async (msg) => {

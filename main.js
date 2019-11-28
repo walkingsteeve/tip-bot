@@ -7,8 +7,14 @@ var commands;
 //Parses a message.
 async function parseMsg(msg) {
     //If the command exists, hand it off.
+
     if (typeof(commands[msg.text[0]]) !== "undefined") {
-        await commands[msg.text[0]](msg);
+	try {
+            await commands[msg.text[0]](msg);
+	}
+	catch (err) {
+	    console.log("Caught in parseMsg:", err);
+	}
         return;
     }
 
@@ -52,18 +58,28 @@ async function handleMessage(msg) {
         return;
     }
 
-    if (
-        //Create an user if they don't have an account already.
-        //If they didn't have an account, and create returned true...
-        (await process.core.users.create(sender)) ||
-        //Or if they need to be notified...
-        (await process.core.users.getNotify(sender))
-    ) {
+    console.log("Received command", text, "from", sender, msg.author.username);
+
+    if (!(await process.core.users.create(sender)))
+    {
+	msg.reply("Sorry, I failed processing your request.");
+	return;
+    }
+
+    const mustBeNotified = process.core.users.getNotify(sender);
+    
+    if (mustBeNotified) {
         //Give them the notified warning.
-        msg.reply("By continuing to use this bot, you agree to release the creator, owners, all maintainers of the bot, and the " + process.settings.coin.symbol + " Team from any legal liability.\r\n\r\nPlease run your previous command again.");
+	const coinType = process.settings.coin.type;
+	const coinName = coinType.charAt(0).toUpperCase() + coinType.slice(1);
+        msg.reply("By continuing to use this bot, you agree to release the creator, owners, all maintainers of the bot, and the " + coinName + " Team from any legal liability.\r\n\r\nPlease run your previous command again.");
         //Mark them as notified.
-        await process.core.users.setNotified(sender);
-        return;
+
+        if (!await process.core.users.setNotified(sender)) {
+	    msg.obj.reply("Sorry, there was an internal error.");
+	}
+
+	return;
     }
 
     //Remove the activation symbol.
@@ -79,6 +95,8 @@ async function handleMessage(msg) {
         }
     }
 
+    console.log("Parsing", text);
+    
     //if we made it to this point, parse the message.
     parseMsg({
         text: text,
@@ -108,7 +126,6 @@ async function main() {
         tip:      require("./commands/tip.js"),
         withdraw: require("./commands/withdraw.js"),
         pool:     require("./commands/pool.js"),
-        //giveaway: require("./commands/giveaway.js")
     };
 
     //Create a Discord process.client.

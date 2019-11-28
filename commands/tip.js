@@ -59,20 +59,18 @@ module.exports = async (msg) => {
     if (amount === "all") {
         //Set the amount to the user's balance.
         amount = await process.core.users.getBalance(from);
-    //Else...
+
     } else {
         //Parse amount into a BN, yet make sure we aren't dealing with < 1 satoshi.
         amount = BN(BN(amount).toFixed(process.settings.coin.decimals));
     }
 
     //If this is not a valid user, or a pool we're sending to...
-    if (
-        (
-            (to.substr(0, 2) !== "<@") ||
-            (to.substr(to.length-1) !== ">") ||
-            (Number.isNaN(parseInt(to.substring(2, to.length-1))))
-        ) && (Object.keys(pools).indexOf(to) === -1)
-    ) {
+    if (((to.substr(0, 2) !== "<@") ||
+         (to.substr(to.length-1) !== ">") ||
+         (Number.isNaN(parseInt(to.substring(2, to.length-1))))) &&
+	(Object.keys(pools).indexOf(to) === -1)) {
+
         msg.obj.reply("You are not tipping to a valid person. Please put @ in front of their name and click the popup Discord provides.");
         return;
     }
@@ -87,21 +85,43 @@ module.exports = async (msg) => {
         return;
     }
 
-    //Subtract the balance from the user.
-    if (!(await process.core.users.subtractBalance(from, amount))) {
-        //If that failed...
-        msg.obj.reply("Your number is either invalid, negative, or you don't have enough.");
-        return;
+    const minAmount = BN(10).exponentiatedBy(-process.settings.coin.decimals);
+    if (amount.lte(BN(0))) {
+	msg.obj.reply("You cannot tip less than " + minAmount.toString() + " " +
+		      process.settings.coin.symbol + ".");
+	return;
     }
 
     //Create an account for the user if they don't have one.
-    await process.core.users.create(to);
+    if (!(await process.core.users.create(to))) {
+	msg.obj.reply("Sorry, I could not create an account for " + to + ".");
+	return;
+    }
+
+    //Subtract the balance from the user.
+    if (!(await process.core.users.subtractBalance(from, amount))) {
+	msg.obj.reply("Sorry, it seems you do not have enough " +
+		      process.settings.coin.symbol + "...");
+        return;
+    }
+
     //Add the amount to the target.
-    await process.core.users.addBalance(to, amount);
-    msg.obj.reply("Sent " + amount + " " + symbol + " to " + (Number.isNaN(parseInt(to)) ? pools[to].printName : "<@" + to + ">") + (pool ? " via the " + pools[from].printName + " pool" : "") + ".");
-    if (pool) {
-        for (var i in pools[from].admins) {
-            process.client.users.get(pools[from].admins[i]).send(pools[from].printName + " pool update: <@" + msg.sender + "> sent " + amount + " " + symbol + " to <@" + to + ">.");
-        }
+    if (!(await process.core.users.addBalance(to, amount))) {
+
+	// try adding the balance back to the 'from'-account
+	if (!(await process.core.users.addBalance(from, amount))) {
+	    console.error("ERROR: There's probably an inconsistency in the balance for " + from);
+	}
+
+        //If that failed...
+	msg.obj.reply("Sorry, there was some error.");
+    }
+    else {
+	msg.obj.reply("Sent " + amount + " " + symbol + " to " + (Number.isNaN(parseInt(to)) ? pools[to].printName : "<@" + to + ">") + (pool ? " via the " + pools[from].printName + " pool" : "") + ".");
+	if (pool) {
+            for (let i in pools[from].admins) {
+		process.client.users.get(pools[from].admins[i]).send(pools[from].printName + " pool update: <@" + msg.sender + "> sent " + amount + " " + symbol + " to <@" + to + ">.");
+            }
+	}
     }
 };

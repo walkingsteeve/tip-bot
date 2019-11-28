@@ -1,0 +1,12 @@
+* Requirements:
+  - Requirements described in the README, and those listed in package.json
+  - zenond installed and running
+  - zenonjs, which is currently installed from the local system (see package.json).
+    Run 'npm transpile' first in that package. It has already been 'npm link'-ed in this here.
+* Summary:
+  This makes the original tip-bot compatible to zenon and also fixes a problem with
+  the database connection:
+  - core/db.js now encapsulates the database accesses, and it uses a connection pool.
+    Without the pool, the connection got lost frequently and unrecoverably. Seems to
+    be stable now.
+
